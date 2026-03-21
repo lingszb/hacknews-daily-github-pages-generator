@@ -1,0 +1,6 @@
+dist/
+.claude/
+.claude-artifacts/
+node_modules/
+data/summaries.json
+Thumbs.db

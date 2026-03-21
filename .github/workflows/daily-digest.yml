@@ -1,0 +1,67 @@
+name: Daily Digest
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '17 6 * * *'
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      SITE_BASE_PATH: ${{ github.event.repository.name }}
+    outputs:
+      digest_date: ${{ steps.meta.outputs.digest_date }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Build digest
+        run: npm run build
+
+      - name: Verify digest
+        run: npm run verify
+
+      - name: Capture build metadata
+        id: meta
+        run: echo "digest_date=$(node -p \"require('./dist/build-meta.json').digestDate\")" >> "$GITHUB_OUTPUT"
+
+      - name: Commit archive data
+        run: |
+          if git diff --quiet -- data/digests; then
+            echo "No archive updates to commit"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/digests
+          git commit -m "Update digest archive for ${{ steps.meta.outputs.digest_date }}"
+          git push
+
+      - name: Upload pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
