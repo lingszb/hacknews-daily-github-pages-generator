@@ -36,7 +36,9 @@ jobs:
 
       - name: Capture build metadata
         id: meta
-        run: echo "digest_date=$(node -p \"require('./dist/build-meta.json').digestDate\")" >> "$GITHUB_OUTPUT"
+        run: |
+          digest_date=$(node -e "console.log(JSON.parse(require('node:fs').readFileSync('./dist/build-meta.json', 'utf8')).digestDate)")
+          echo "digest_date=$digest_date" >> "$GITHUB_OUTPUT"
 
       - name: Commit archive data
         run: |
