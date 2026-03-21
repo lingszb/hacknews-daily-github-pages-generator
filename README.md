@@ -13,6 +13,7 @@ For project pages, set `SITE_BASE_PATH` to the repository name or path prefix du
 Example: `SITE_BASE_PATH=hacknews-daily-github-pages-generator npm run build`
 The build also tolerates `/repo-name/` form and Git Bash path rewriting.
 The included GitHub Actions workflow sets this automatically.
+The site is scheduled to update daily at 10:00 Beijing time (02:00 UTC), and can also be triggered manually with `workflow_dispatch`.
 
 ## Optional data
 
